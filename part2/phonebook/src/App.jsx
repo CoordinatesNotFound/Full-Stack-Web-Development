@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import personService from "./services/person.js";
-import './index.css'
+import "./index.css";
 
 const Filter = ({ newFilter, handleFilterChange }) => (
   <div>
@@ -10,7 +10,6 @@ const Filter = ({ newFilter, handleFilterChange }) => (
     />
   </div>
 );
-
 
 const PersonForm = (
   { addPerson, newName, handleNameChange, newNumber, handleNumberChange },
@@ -56,27 +55,27 @@ const Persons = ({ persons, deletePerson }) => (
 
 const NotifyError = ({ message }) => {
   if (message === null) {
-    return null
+    return null;
   }
 
   return (
-    <div className='error'>
+    <div className="error">
       {message}
     </div>
-  )
-}
+  );
+};
 
 const NotifySuccess = ({ message }) => {
   if (message === null) {
-    return null
+    return null;
   }
 
   return (
-    <div  className='success'>
+    <div className="success">
       {message}
     </div>
-  )
-}
+  );
+};
 
 const App = () => {
   const [persons, setPersons] = useState([
@@ -123,24 +122,33 @@ const App = () => {
             setNewName("");
             setNewNumber("");
             setSuccessMessage(
-              `${person.name}'s number updated`
+              `${person.name}'s number updated`,
             );
             setTimeout(() => {
               setSuccessMessage(null);
             }, 5000);
           })
           .catch((error) => {
-            setErrorMessage(
-              `Information of '${person.name}' has already been removed from server`,
-            );
+            if(error.response.status === "404"){
+              setErrorMessage(
+                `Information of '${person.name}' has already been removed from server`,
+              );
+              setPersons(persons.filter((p) => p.id !== person.id));
+            }else {
+              setErrorMessage(error.response.data.error)
+            }
+            
             setTimeout(() => {
               setErrorMessage(null);
             }, 5000);
-            setPersons(persons.filter((p) => p.id !== person.id));
+            
           });
+        return;
+      }else{
         return;
       }
     }
+
     const personObject = {
       name: newName,
       number: newNumber,
@@ -153,10 +161,18 @@ const App = () => {
         setNewName("");
         setNewNumber("");
         setSuccessMessage(
-          `Added ${personObject.name}`
+          `Added ${personObject.name}`,
         );
         setTimeout(() => {
           setSuccessMessage(null);
+        }, 5000);
+      })
+      .catch((error) => {
+        setErrorMessage(
+          error.response.data.error
+        );
+        setTimeout(() => {
+          setErrorMessage(null);
         }, 5000);
       });
   };
@@ -198,7 +214,6 @@ const App = () => {
       <h2>Phonebook</h2>
       <NotifySuccess message={successMessage} />
       <NotifyError message={errorMessage} />
-      
 
       <Filter newFilter={newFilter} handleFilterChange={handleFilterChange} />
 
